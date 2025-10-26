@@ -1,72 +1,285 @@
-# ⌨️ Typing Speed Tester
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; transition: background 0.3s; }
+        body.dark { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 700px; width: 100%; transition: background 0.3s, color 0.3s; }
+        .dark .container { background: #0f3460; color: #e0e0e0; }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        .dark h1 { color: #e0e0e0; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .controls select, .controls button { padding: 10px; border-radius: 8px; border: 2px solid #ddd; font-size: 14px; cursor: pointer; }
+        .dark .controls select, .dark .controls button { background: #16213e; color: #e0e0e0; border-color: #533483; }
+        #theme-toggle { background: #667eea; color: white; border: none; }
+        .dark #theme-toggle { background: #e94560; }
+        .custom-text { margin-bottom: 15px; }
+        .custom-text textarea { width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #ddd; font-size: 14px; min-height: 80px; }
+        .dark .custom-text textarea { background: #16213e; color: #e0e0e0; border-color: #533483; }
+        .progress-bar { height: 8px; background: #e0e0e0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .dark .progress-bar { background: #16213e; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.2s; }
+        #text-display { background: #f5f5f5; padding: 20px; border-radius: 8px; font-size: 20px; line-height: 1.8; margin-bottom: 15px; min-height: 100px; }
+        .dark #text-display { background: #16213e; }
+        #text-display span { transition: all 0.1s; }
+        .correct { color: green; }
+        .incorrect { color: red; background: #ffe6e6; }
+        .dark .incorrect { background: #4a0000; }
+        .current { background: #667eea; color: white; padding: 2px; border-radius: 3px; }
+        .dark .current { background: #e94560; }
+        #input-area { width: 100%; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; resize: vertical; }
+        #input-area:focus { outline: none; border-color: #667eea; }
+        #input-area:disabled { background: #f0f0f0; }
+        .dark #input-area { background: #16213e; color: #e0e0e0; border-color: #533483; }
+        .dark #input-area:disabled { background: #0a1929; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat { text-align: center; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .dark .stat { background: #16213e; }
+        .stat-value { font-size: 28px; font-weight: bold; color: #667eea; }
+        .dark .stat-value { color: #e94560; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+        .dark .stat-label { color: #aaa; }
+        .btn-group { display: flex; gap: 10px; }
+        button { width: 100%; padding: 15px; font-size: 16px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #5568d3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .dark button { background: #e94560; }
+        .dark button:hover { background: #d63447; }
+        #stop-btn { background: #e74c3c; display: none; }
+        #stop-btn:hover { background: #c0392b; }
+        .dark #stop-btn { background: #c0392b; }
+        .dark #stop-btn:hover { background: #a93226; }
+        .scores { margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; }
+        .dark .scores { border-color: #533483; }
+        .scores h3 { color: #333; margin-bottom: 15px; }
+        .dark .scores h3 { color: #e0e0e0; }
+        .score-item { display: flex; justify-content: space-between; padding: 10px; background: #f9f9f9; margin-bottom: 8px; border-radius: 5px; font-size: 14px; }
+        .dark .score-item { background: #16213e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⌨️ Typing Speed Tester</h1>
+        <div class="controls">
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="custom">Custom Text</option>
+            </select>
+            <select id="mode">
+                <option value="timed">60s Timed</option>
+                <option value="word">Word by Word</option>
+            </select>
+            <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+        <div class="custom-text" id="custom-text-area" style="display:none;">
+            <textarea id="custom-input" placeholder="Enter your custom text here..."></textarea>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        <div id="text-display"></div>
+        <textarea id="input-area" placeholder="Click Start to begin..." disabled></textarea>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="wpm">0</div>
+                <div class="stat-label">WPM</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="accuracy">100</div>
+                <div class="stat-label">Accuracy %</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="timer">60</div>
+                <div class="stat-label">Time (s)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="cpm">0</div>
+                <div class="stat-label">CPM</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="errors">0</div>
+                <div class="stat-label">Errors</div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button id="start-btn" onclick="startTest()">Start Test</button>
+            <button id="stop-btn" onclick="stopTest()">Stop</button>
+        </div>
+        <div class="scores">
+            <h3>🏆 Top 5 Scores</h3>
+            <div id="top-scores"></div>
+        </div>
+    </div>
 
-A modern, feature-rich typing speed tester built with vanilla JavaScript. Test your typing speed, accuracy, and track your progress with an intuitive interface.
+    <script>
+        const texts = {
+            easy: [
+                "The quick brown fox jumps over the lazy dog.",
+                "Practice makes perfect every single day.",
+                "Code is poetry written for machines."
+            ],
+            medium: [
+                "The quick brown fox jumps over the lazy dog. Programming is the art of telling another human what one wants the computer to do.",
+                "Practice makes perfect. The only way to learn a new programming language is by writing programs in it.",
+                "Technology is best when it brings people together. Code is like humor. When you have to explain it, it is bad."
+            ],
+            hard: [
+                "First, solve the problem. Then, write the code. Any fool can write code that a computer can understand. Good programmers write code that humans can understand. Debugging is twice as hard as writing the code in the first place.",
+                "The best error message is the one that never shows up. Simplicity is the soul of efficiency in programming. Make it work, make it right, make it fast. Premature optimization is the root of all evil.",
+                "Software is a great combination between artistry and engineering. When you finally understand the problem, the solution becomes obvious. Programs must be written for people to read, and only incidentally for machines to execute."
+            ]
+        };
 
-## 🚀 Features
+        let currentText = '', startTime, timerInterval, timeLeft = 60, errorCount = 0;
+        const inputArea = document.getElementById('input-area');
+        const textDisplay = document.getElementById('text-display');
 
-- Multiple Difficulty Levels: Easy, Medium, Hard, and Custom text options
-- Dual Testing Modes: 60-second timed mode or word-by-word completion
-- Real-time Statistics: 
-  - WPM (Words Per Minute)
-  - CPM (Characters Per Minute)
-  - Accuracy percentage
-  - Error count
-  - Live timer
-- Visual Feedback: 
-  - Color-coded character highlighting (green for correct, red for incorrect)
-  - Current character indicator
-  - Progress bar
-- Dark Mode: Toggle between light and dark themes with preference saving
-- Custom Text Input: Practice with your own text
-- Top 5 Leaderboard: Automatically saves and displays your best scores
-- Stop/Reset: Stop test mid-way without saving score
+        function startTest() {
+            const difficulty = document.getElementById('difficulty').value;
+            const mode = document.getElementById('mode').value;
+            
+            if (difficulty === 'custom') {
+                currentText = document.getElementById('custom-input').value.trim();
+                if (!currentText) return alert('Please enter custom text!');
+            } else {
+                const textArray = texts[difficulty];
+                currentText = textArray[Math.floor(Math.random() * textArray.length)];
+            }
+            
+            textDisplay.innerHTML = currentText.split('').map((c, i) => `<span data-index="${i}">${c}</span>`).join('');
+            inputArea.value = '';
+            inputArea.disabled = false;
+            inputArea.focus();
+            timeLeft = mode === 'timed' ? 60 : 999;
+            errorCount = 0;
+            document.getElementById('timer').textContent = mode === 'timed' ? timeLeft : '--';
+            document.getElementById('wpm').textContent = '0';
+            document.getElementById('cpm').textContent = '0';
+            document.getElementById('accuracy').textContent = '100';
+            document.getElementById('errors').textContent = '0';
+            document.getElementById('progress').style.width = '0%';
+            document.getElementById('start-btn').textContent = 'Testing...';
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('stop-btn').style.display = 'block';
+            startTime = Date.now();
+            
+            clearInterval(timerInterval);
+            if (mode === 'timed') {
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').textContent = timeLeft;
+                    if (timeLeft <= 0) endTest();
+                }, 1000);
+            }
+        }
 
-## 🎯 Demo
+        inputArea.addEventListener('input', () => {
+            const typed = inputArea.value;
+            const spans = textDisplay.querySelectorAll('span');
+            let correct = 0, errors = 0;
 
-Simply open `typing-speed-tester.html` in any modern web browser - no installation or dependencies required!
+            spans.forEach((span, i) => {
+                span.classList.remove('current');
+                if (i < typed.length) {
+                    if (typed[i] === currentText[i]) {
+                        span.className = 'correct';
+                        correct++;
+                    } else {
+                        span.className = 'incorrect';
+                        errors++;
+                    }
+                } else {
+                    span.className = '';
+                }
+            });
 
-## 📖 How to Use
+            if (typed.length < currentText.length) {
+                spans[typed.length].classList.add('current');
+            }
 
-1. Select Difficulty: Choose Easy, Medium, Hard, or Custom text
-2. Choose Mode: Pick between 60s Timed or Word-by-Word mode
-3. Click Start: Begin typing the displayed text
-4. Track Progress: Watch your stats update in real-time
-5. View Scores: Check your top 5 performances in the leaderboard
+            errorCount = errors;
+            const accuracy = typed.length ? Math.round((correct / typed.length) * 100) : 100;
+            document.getElementById('accuracy').textContent = accuracy;
+            document.getElementById('errors').textContent = errorCount;
 
-## 🛠️ Technologies
+            const minutes = (Date.now() - startTime) / 60000;
+            const words = typed.trim().split(/\s+/).length;
+            const wpm = Math.round(words / minutes) || 0;
+            const cpm = Math.round(typed.length / minutes) || 0;
+            document.getElementById('wpm').textContent = wpm;
+            document.getElementById('cpm').textContent = cpm;
 
-- HTML5
-- CSS3 (with CSS Grid & Flexbox)
-- Vanilla JavaScript (ES6+)
-- LocalStorage for data persistence
+            const progress = (typed.length / currentText.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
 
-## 💡 Key Concepts Demonstrated
+            if (typed === currentText) endTest();
+        });
 
-- Event listeners (input, change events)
-- Timers and intervals
-- String comparison and manipulation
-- DOM manipulation
-- LocalStorage API
-- Responsive design
-- Dark mode implementation
+        function endTest() {
+            clearInterval(timerInterval);
+            inputArea.disabled = true;
+            document.getElementById('start-btn').textContent = 'Retry';
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('stop-btn').style.display = 'none';
+            document.getElementById('progress').style.width = '100%';
 
-## 📱 Browser Compatibility
+            const wpm = parseInt(document.getElementById('wpm').textContent);
+            const cpm = parseInt(document.getElementById('cpm').textContent);
+            const accuracy = parseInt(document.getElementById('accuracy').textContent);
+            const difficulty = document.getElementById('difficulty').value;
+            saveScore(wpm, cpm, accuracy, difficulty);
+            displayTopScores();
+        }
 
-Works on all modern browsers:
-- Chrome
-- Firefox
-- Safari
-- Edge
+        function saveScore(wpm, cpm, accuracy, difficulty) {
+            const scores = JSON.parse(localStorage.getItem('typingScores') || '[]');
+            scores.push({ wpm, cpm, accuracy, difficulty, date: new Date().toLocaleDateString() });
+            scores.sort((a, b) => b.wpm - a.wpm);
+            localStorage.setItem('typingScores', JSON.stringify(scores.slice(0, 5)));
+        }
 
-## 📄 License
+        function displayTopScores() {
+            const scores = JSON.parse(localStorage.getItem('typingScores') || '[]');
+            const html = scores.length ? scores.map((s, i) => 
+                `<div class="score-item"><span>${i + 1}. ${s.wpm} WPM | ${s.cpm} CPM | ${s.accuracy}% | ${s.difficulty}</span><span>${s.date}</span></div>`
+            ).join('') : '<div class="score-item"><span>No scores yet</span></div>';
+            document.getElementById('top-scores').innerHTML = html;
+        }
 
-Free to use for personal and educational purposes.
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('theme-toggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+        }
 
-## 🤝 Contributing
+        document.getElementById('difficulty').addEventListener('change', (e) => {
+            document.getElementById('custom-text-area').style.display = 
+                e.target.value === 'custom' ? 'block' : 'none';
+        });
 
-Feel free to fork, modify, and submit pull requests!
+        function stopTest() {
+            clearInterval(timerInterval);
+            inputArea.disabled = true;
+            inputArea.value = '';
+            textDisplay.innerHTML = '';
+            document.getElementById('wpm').textContent = '0';
+            document.getElementById('cpm').textContent = '0';
+            document.getElementById('accuracy').textContent = '100';
+            document.getElementById('errors').textContent = '0';
+            document.getElementById('timer').textContent = '60';
+            document.getElementById('progress').style.width = '0%';
+            document.getElementById('start-btn').textContent = 'Start Test';
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('stop-btn').style.display = 'none';
+        }
 
-
-
-
-
+        if (localStorage.getItem('darkMode') === 'true') toggleTheme();
+        displayTopScores();
+    </script>
+</body>
+</html>
