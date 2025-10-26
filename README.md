@@ -1,5 +1,3 @@
-# Typing-Speed-Tester
-
 # ⌨️ Typing Speed Tester
 
 A modern, feature-rich typing speed tester built with vanilla JavaScript. Test your typing speed, accuracy, and track your progress with an intuitive interface.
@@ -67,3 +65,8 @@ Free to use for personal and educational purposes.
 ## 🤝 Contributing
 
 Feel free to fork, modify, and submit pull requests!
+
+
+
+
+
